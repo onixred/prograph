@@ -1,4 +1,4 @@
-package com.kodedu.modulegraph.model;
+package ru.maksimov.andrey.prograph.model;
 
 import java.util.Objects;
 
