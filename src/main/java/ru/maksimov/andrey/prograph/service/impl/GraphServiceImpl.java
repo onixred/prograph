@@ -45,14 +45,24 @@ public class GraphServiceImpl implements GraphService {
 
 		for (File file : files) {
 			for (Property property : file.getProperties()) {
-				Node node = key2Node.get(property.getShotName());
+				String existKey = null;
+				for(String key: key2Node.keySet()) {
+					if(property.getShotName().contains(key)) {
+						existKey = key;
+						break;
+					}
+				}
+				if(existKey == null) {
+					existKey = property.getShotName();
+				} 
+				Node node = key2Node.get(existKey);
 				if (node == null) {
 					Color color = Utility.getColor(property.getGroup());
-					node = new Node(property.getShotName(), color);
-					key2Node.put(property.getShotName(), node);
+					node = new Node(existKey, color);
+					key2Node.put(existKey, node);
 				}
 				// сделать связь
-				Edge edge = new Edge(file.getName(), property.getShotName());
+				Edge edge = new Edge(file.getName(), existKey);
 				edges.add(edge);
 			}
 		}
