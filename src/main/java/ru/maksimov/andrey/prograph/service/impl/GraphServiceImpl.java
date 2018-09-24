@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import ru.maksimov.andrey.prograph.model.Edge;
 import ru.maksimov.andrey.prograph.model.File;
 import ru.maksimov.andrey.prograph.model.Node;
 import ru.maksimov.andrey.prograph.model.Property;
+import ru.maksimov.andrey.prograph.service.DataSourceService;
 import ru.maksimov.andrey.prograph.service.GraphService;
 import ru.maksimov.andrey.prograph.service.PropertieService;
 
@@ -25,15 +28,19 @@ import ru.maksimov.andrey.prograph.service.PropertieService;
 @Service
 public class GraphServiceImpl implements GraphService {
 
-	private PropertieService propertieService;
+	private static final Logger LOG = LogManager.getLogger(GraphServiceImpl.class);
 
-	GraphServiceImpl(@Autowired PropertieService propertieService) {
+	private PropertieService propertieService;
+	private DataSourceService dataSourceService;
+
+	GraphServiceImpl(@Autowired PropertieService propertieService, DataSourceService dataSourceService) {
 		this.propertieService = propertieService;
+		this.dataSourceService = dataSourceService;
 	}
 
 	@Override
 	public Map<String, Set<?>> fillNodeAndEdges() {
-
+		//dataSourceService.loadFile();
 		Set<Edge> edges = new HashSet<Edge>();
 		Map<String, Node> key2Node = new HashMap<>();
 		Set<File> files = propertieService.loadFiles();
@@ -68,6 +75,12 @@ public class GraphServiceImpl implements GraphService {
 		}
 
 		Map<String, Set<?>> name2Set = new HashMap<>();
+		for(Node node: key2Node.values()) {
+			LOG.info("node" +node.getLabel() + " Color " + node.getColor());
+		}
+		for(Edge edge: edges) {
+			LOG.info("edge" +edge.getFrom() +"->" +edge.getTo());
+		}
 		name2Set.put("nodes", new HashSet<>(key2Node.values()));
 		name2Set.put("edges", edges);
 
