@@ -41,11 +41,11 @@ public class GraphServiceImpl implements GraphService {
 	@Override
 	public Map<String, Set<?>> fillNodeAndEdges() {
 		//dataSourceService.loadFile();
-		Set<Edge> edges = new HashSet<Edge>();
+		Set<Edge> edges = new HashSet<>();
 		Map<String, Node> key2Node = new HashMap<>();
 		Set<File> files = propertieService.loadFiles();
 		for (File file : files) {
-			Color color = Utility.getColor(file.getGroup());
+			Color color = Utility.getColor(file.getType());
 			Node node = new Node(file.getName(), color);
 			key2Node.put(file.getName(), node);
 		}

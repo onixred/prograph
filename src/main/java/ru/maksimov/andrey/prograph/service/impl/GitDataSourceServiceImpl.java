@@ -77,14 +77,14 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 									try {
 										InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(),
 												item.getId());
-										URL url = PropertieServiceImpl.class.getResource(propertiesPath);
+										URL url = PropertyServiceImpl.class.getResource(propertiesPath);
 
 										File targetFile = new File(url.getPath() + item.getName());
 										java.nio.file.Files.copy(initialStream, targetFile.toPath(),
 												StandardCopyOption.REPLACE_EXISTING);
 										IOUtils.closeQuietly(initialStream);
 										try {
-											Thread.sleep(300l);
+											Thread.sleep(300L);
 										} catch (InterruptedException e1) {
 											LOG.error("Unable find file for project " + project.getName(), e1);
 										}
