@@ -54,17 +54,17 @@ public class GraphServiceImpl implements GraphService {
 			for (Property property : file.getProperties()) {
 				String existKey = null;
 				for(String key: key2Node.keySet()) {
-					if(property.getShotName().contains(key)) {
+					if(property.getShortName().contains(key)) {
 						existKey = key;
 						break;
 					}
 				}
 				if(existKey == null) {
-					existKey = property.getShotName();
+					existKey = property.getShortName();
 				} 
 				Node node = key2Node.get(existKey);
 				if (node == null) {
-					Color color = Utility.getColor(property.getGroup());
+					Color color = Utility.getColor(property.getType());
 					node = new Node(existKey, color);
 					key2Node.put(existKey, node);
 				}

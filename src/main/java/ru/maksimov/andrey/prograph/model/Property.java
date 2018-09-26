@@ -1,35 +1,19 @@
 package ru.maksimov.andrey.prograph.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import ru.maksimov.andrey.prograph.component.PropertyType;
 import ru.maksimov.andrey.prograph.component.Utility;
 
+@Data
 public class Property {
+	private final String name;
+	private final String shortName;
+	private final PropertyType type;
 
-	private String name;
-	private int group;
-
-	public Property(String name, int group) {
+	public Property(String name, PropertyType type) {
 		this.name = name;
-		this.group = group;
+		this.type = type;
+		this.shortName = Utility.tailCut(name);
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getShotName() {
-		return Utility.tailCut(name);
-	}
-
-	public int getGroup() {
-		return group;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public void setGroup(int group) {
-		this.group = group;
-	}
-
 }

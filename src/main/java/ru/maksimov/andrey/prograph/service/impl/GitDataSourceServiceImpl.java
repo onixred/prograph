@@ -7,6 +7,7 @@ import java.net.URL;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -25,10 +26,10 @@ import ru.maksimov.andrey.prograph.service.DataSourceService;
  * 
  * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
  */
+@Slf4j
 @Service
 public class GitDataSourceServiceImpl implements DataSourceService {
-
-	private static final Logger LOG = LogManager.getLogger(GitDataSourceServiceImpl.class);
+    public static final long REPOSITORY_SLEEP_TIME_IN_MILLS = 300;
 
 	private GitLabApi gitLabApi;
 	private String[] filePaths;
@@ -44,7 +45,6 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 		this.prefixFilters = prefixFilters;
 		this.propertiesPath = propertiesPath;
 		gitLabApi = new GitLabApi(hostUrl, privateToken);
-
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 			List<Project> projects = gitLabApi.getProjectApi().getProjects();
 			RepositoryApi repositoryApi = gitLabApi.getRepositoryApi();
 			for (Project project : projects) {
-				LOG.info(project.getName());
+				log.info(project.getName());
 				if (project.getDefaultBranch() == null) {
 					continue;
 				}
@@ -62,9 +62,9 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 						List<TreeItem> tree = repositoryApi.getTree(project.getId(), filePath + project.getName(),
 								"master");
 						try {
-							Thread.sleep(300l);
+							Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
 						} catch (InterruptedException e1) {
-							LOG.error("Unable find file for project " + project.getName(), e1);
+							log.error("Unable find file for project " + project.getName(), e1);
 						}
 						if (tree.isEmpty()) {
 							continue;
@@ -72,7 +72,7 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 						for (TreeItem item : tree) {
 							for (String prefixFilter : prefixFilters) {
 								if (item.getName().contains(prefixFilter)) {
-									LOG.info(item.getName());
+									log.info(item.getName());
 									// загрузка файла
 									try {
 										InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(),
@@ -84,25 +84,25 @@ public class GitDataSourceServiceImpl implements DataSourceService {
 												StandardCopyOption.REPLACE_EXISTING);
 										IOUtils.closeQuietly(initialStream);
 										try {
-											Thread.sleep(300L);
+											Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
 										} catch (InterruptedException e1) {
-											LOG.error("Unable find file for project " + project.getName(), e1);
+											log.error("Unable find file for project " + project.getName(), e1);
 										}
 									} catch (IOException e) {
-										LOG.error("Unable save file " + item.getName() + " " + e.getMessage(), e);
+										log.error("Unable save file " + item.getName() + " " + e.getMessage(), e);
 									} catch (GitLabApiException e) {
-										LOG.error("Unable load file " + item.getName() + " " + e.getMessage(), e);
+										log.error("Unable load file " + item.getName() + " " + e.getMessage(), e);
 									}
 								}
 							}
 						}
 					} catch (GitLabApiException e) {
-						LOG.error("Unable get tree for projects " +project.getName() + " "+ e.getMessage(), e);
+						log.error("Unable get tree for projects " +project.getName() + " "+ e.getMessage(), e);
 					}
 				}
 			}
 		} catch (GitLabApiException e) {
-			LOG.error("Unable get git projects " + e.getMessage(), e);
+			log.error("Unable get git projects " + e.getMessage(), e);
 		}
 
 	}

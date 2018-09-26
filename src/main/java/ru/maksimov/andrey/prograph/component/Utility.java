@@ -6,6 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utility {
+    public static final int[] GOOGLE_CHART_COLORS = new int[] {3368652, 14432530, 16750848, 1087000, 10027161,
+            39366, 14500983, 6728192, 12070446, 3236757, 10044569, 2271897, 11184657, 6697932,
+            15102720, 9111303, 6623335, 3314274, 5600422, 3882668, 12022562, 1496608, 12129155,
+            16004510, 10246453, 11125779, 2783117, 6720796, 12493843, 809250, 7615505};
 
 	public static String tailCut(String name) {
 		//return name.replaceFirst("[.][^.]+$", "");
@@ -20,6 +24,7 @@ public class Utility {
 	public static boolean checkWithRegExp(String input, String regex) {
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(input);
+
 		return m.matches();
 	}
 
@@ -36,13 +41,14 @@ public class Utility {
 		return ThreadLocalRandom.current().nextInt(min, max);
 	}
 
-	/*
-	{"#3366cc","#dc3912","#ff9900","#109618","#990099","#0099c6","#dd4477","#66aa00","#b82e2e","#316395","#994499","#22aa99","#aaaa11","#6633cc","#e67300","#8b0707","#651067","#329262","#5574a6","#3b3eac","#b77322","#16d620","#b91383","#f4359e","#9c5935","#a9c413","#2a778d","#668d1c","#bea413","#0c5922","#743411"}
-	 */
 	public static Color getColor(PropertyType type) {
-		//TODO fix
-		return null;
+		if (type.ordinal() < GOOGLE_CHART_COLORS.length) {
+		    return new Color(GOOGLE_CHART_COLORS[type.ordinal()]);
+        } else {
+		    return getColor(type.ordinal());
+        }
 	}
+
 	public static Color getColor(int intColor) {
 		System.out.println(intColor);
 		float r = 0;
