@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +27,12 @@ import ru.maksimov.andrey.prograph.service.PropertieService;
  * 
  * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GraphServiceImpl implements GraphService {
-
-	private static final Logger LOG = LogManager.getLogger(GraphServiceImpl.class);
-
-	private PropertieService propertieService;
-	private DataSourceService dataSourceService;
-
-	GraphServiceImpl(@Autowired PropertieService propertieService, DataSourceService dataSourceService) {
-		this.propertieService = propertieService;
-		this.dataSourceService = dataSourceService;
-	}
+	private final PropertieService propertieService;
+	private final DataSourceService dataSourceService;
 
 	@Override
 	public Map<String, Set<?>> fillNodeAndEdges() {
@@ -53,12 +49,14 @@ public class GraphServiceImpl implements GraphService {
 		for (File file : files) {
 			for (Property property : file.getProperties()) {
 				String existKey = null;
-				for(String key: key2Node.keySet()) {
+
+				//TODO check
+				/*for(String key: key2Node.keySet()) {
 					if(property.getShortName().contains(key)) {
 						existKey = key;
 						break;
 					}
-				}
+				}*/
 				if(existKey == null) {
 					existKey = property.getShortName();
 				} 
@@ -76,10 +74,10 @@ public class GraphServiceImpl implements GraphService {
 
 		Map<String, Set<?>> name2Set = new HashMap<>();
 		for(Node node: key2Node.values()) {
-			LOG.info("node" +node.getLabel() + " Color " + node.getColor());
+			log.info("node" +node.getLabel() + " Color " + node.getColor());
 		}
 		for(Edge edge: edges) {
-			LOG.info("edge" +edge.getFrom() +"->" +edge.getTo());
+			log.info("edge" +edge.getFrom() +"->" +edge.getTo());
 		}
 		name2Set.put("nodes", new HashSet<>(key2Node.values()));
 		name2Set.put("edges", edges);

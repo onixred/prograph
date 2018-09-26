@@ -60,6 +60,7 @@ public class PropertyServiceImpl implements PropertieService {
             Properties properties = new Properties();
             properties.load(new FileReader(propertyFile));
 
+
 			File file = new File(getFileName(propertyFile.getName()), PropertyType.NTK_SERVICE);
 			initFile(properties, file);
 
@@ -79,6 +80,30 @@ public class PropertyServiceImpl implements PropertieService {
         return PropertyType.UNDEFINED;
     }
 
+    private String preProcessProperty(String propertyName, String propertyValue) {
+		if ("db.url".equals(propertyName)) {
+			int index1 = propertyValue.indexOf('/') + 1;
+			int index2 = propertyValue.indexOf('?');
+
+			if (index1 > 1 && index2 > 0 && index2 > index1) {
+				String dbName = propertyValue.substring(index1, index2).toLowerCase();
+				return "db-" + dbName + ".host";
+			} else {
+				return "db-unknown.host";
+			}
+		} else if (propertyName.startsWith("db.") && propertyName.endsWith(".host")) {
+			return "db-" + propertyName.substring(3);
+		} else if (propertyName.endsWith("host") || propertyName.endsWith("url")) {
+		    String trimName = propertyName.replace(".host", "").replace(".url", "");
+		    if (propertiesConfig.getWhiteListNtkServices().contains(propertyName + ".host") ||
+                    propertiesConfig.getWhiteListNtkServices().contains(trimName)) {
+		        return "ntk-" + trimName + ".host";
+            }
+        }
+
+		return propertyName;
+	}
+
 
     private String getFileName(String fileName) {
         String name = Utility.tailCut(fileName);
@@ -90,9 +115,10 @@ public class PropertyServiceImpl implements PropertieService {
 		Set<Property> propertiesSet = new HashSet<>();
 		// Поиск ключей которые удовлетворяют regexp-ам
         for (String propertyName : properties.stringPropertyNames()) {
-            PropertyType propertyType = getPropertyType(propertyName);
+        	String propertyNamePreProcess = preProcessProperty(propertyName, properties.getProperty(propertyName));
+            PropertyType propertyType = getPropertyType(propertyNamePreProcess);
             if (propertyType != PropertyType.UNDEFINED) {
-                Property property = new Property(propertyName, propertyType);
+                Property property = new Property(propertyNamePreProcess, propertyType);
                 propertiesSet.add(property);
             }
         }

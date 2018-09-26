@@ -5,8 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import ru.maksimov.andrey.prograph.component.PropertyType;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @Configuration
@@ -16,5 +15,14 @@ public class PropertiesConfig {
 
     private String filter;
 
+    private String ntkServices;
+
+    private Set<String> whiteListNtkServices = new HashSet<>();
+
     private Map<PropertyType, String> types = new LinkedHashMap<>();
+
+    public void setNtkServices(String ntkServices) {
+        this.ntkServices = ntkServices;
+        this.whiteListNtkServices = new HashSet<>(Arrays.asList(ntkServices.split(", ")));
+    }
 }

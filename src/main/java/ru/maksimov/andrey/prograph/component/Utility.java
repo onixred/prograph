@@ -11,14 +11,13 @@ public class Utility {
             15102720, 9111303, 6623335, 3314274, 5600422, 3882668, 12022562, 1496608, 12129155,
             16004510, 10246453, 11125779, 2783117, 6720796, 12493843, 809250, 7615505};
 
-	public static String tailCut(String name) {
-		//return name.replaceFirst("[.][^.]+$", "");
-		int index = name.lastIndexOf('.');
-		if (index > 0) {
-			return name.substring(0, index);
-		} else {
-			return name;
-		}
+    public static String tailCut(String name) {
+        int index = name.lastIndexOf('.');
+        if (index > 0) {
+            return name.substring(0, index);
+        } else {
+            return name;
+        }
 	}
 
 	public static boolean checkWithRegExp(String input, String regex) {

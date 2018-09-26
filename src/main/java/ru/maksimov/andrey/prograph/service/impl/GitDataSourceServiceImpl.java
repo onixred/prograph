@@ -1,15 +1,6 @@
 package ru.maksimov.andrey.prograph.service.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -18,8 +9,14 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.TreeItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import ru.maksimov.andrey.prograph.service.DataSourceService;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 /**
  * Реализация сервиса по работе с git-хранилищем
