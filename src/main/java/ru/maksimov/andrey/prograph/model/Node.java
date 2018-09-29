@@ -3,7 +3,6 @@ package ru.maksimov.andrey.prograph.model;
 import lombok.Data;
 
 import java.awt.Color;
-import java.util.Objects;
 
 @Data
 public class Node {

@@ -8,8 +8,6 @@ import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +34,7 @@ public class GraphServiceImpl implements GraphService {
 
 	@Override
 	public Map<String, Set<?>> fillNodeAndEdges() {
-		//dataSourceService.loadFile();
+		dataSourceService.loadFile();
 		Set<Edge> edges = new HashSet<>();
 		Map<String, Node> key2Node = new HashMap<>();
 		Set<File> files = propertieService.loadFiles();

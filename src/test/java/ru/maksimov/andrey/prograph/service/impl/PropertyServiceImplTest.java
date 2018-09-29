@@ -5,8 +5,6 @@ import org.junit.Test;
 import ru.maksimov.andrey.prograph.component.PropertyType;
 import ru.maksimov.andrey.prograph.config.PropertiesConfig;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
