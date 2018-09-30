@@ -7,6 +7,11 @@ import ru.maksimov.andrey.prograph.component.PropertyType;
 
 import java.util.*;
 
+/**
+ * Конфиг свойств properties
+ * 
+ * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
+ */
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "properties")

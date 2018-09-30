@@ -5,6 +5,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Вспомогательный класс 
+ * 
+ * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
+ */
 public class Utility {
     public static final int[] GOOGLE_CHART_COLORS = new int[] {3368652, 14432530, 16750848, 1087000, 10027161,
             39366, 14500983, 6728192, 12070446, 3236757, 10044569, 2271897, 11184657, 6697932,

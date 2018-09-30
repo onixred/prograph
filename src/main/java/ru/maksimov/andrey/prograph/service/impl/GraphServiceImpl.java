@@ -29,58 +29,58 @@ import ru.maksimov.andrey.prograph.service.PropertieService;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GraphServiceImpl implements GraphService {
-	private final PropertieService propertieService;
-	private final DataSourceService dataSourceService;
+    private final PropertieService propertieService;
+    private final DataSourceService dataSourceService;
 
-	@Override
-	public Map<String, Set<?>> fillNodeAndEdges() {
-		dataSourceService.loadFile();
-		Set<Edge> edges = new HashSet<>();
-		Map<String, Node> key2Node = new HashMap<>();
-		Set<File> files = propertieService.loadFiles();
-		for (File file : files) {
-			Color color = Utility.getColor(file.getType());
-			Node node = new Node(file.getName(), color);
-			key2Node.put(file.getName(), node);
-		}
+    @Override
+    public Map<String, Set<?>> fillNodeAndEdges() {
+       
+        dataSourceService.loadFile();
+        Set<Edge> edges = new HashSet<>();
+        Map<String, Node> key2Node = new HashMap<>();
+        Set<File> files = propertieService.loadFiles();
+        for (File file : files) {
+            Color color = Utility.getColor(file.getType());
+            Node node = new Node(file.getName(), color);
+            key2Node.put(file.getName(), node);
+        }
 
-		for (File file : files) {
-			for (Property property : file.getProperties()) {
-				String existKey = null;
+        for (File file : files) {
+            for (Property property : file.getGroupProperties()) {
+                String existKey = null;
 
-				//TODO check
-				/*for(String key: key2Node.keySet()) {
-					if(property.getShortName().contains(key)) {
-						existKey = key;
-						break;
-					}
-				}*/
-				if(existKey == null) {
-					existKey = property.getShortName();
-				} 
-				Node node = key2Node.get(existKey);
-				if (node == null) {
-					Color color = Utility.getColor(property.getType());
-					node = new Node(existKey, color);
-					key2Node.put(existKey, node);
-				}
-				// сделать связь
-				Edge edge = new Edge(file.getName(), existKey);
-				edges.add(edge);
-			}
-		}
+                // TODO check
+                /*
+                 * for(String key: key2Node.keySet()) {
+                 * if(property.getShortName().contains(key)) { existKey = key;
+                 * break; } }
+                 */
+                if (existKey == null) {
+                    existKey = property.getShortName();
+                }
+                Node node = key2Node.get(existKey);
+                if (node == null) {
+                    Color color = Utility.getColor(property.getType());
+                    node = new Node(existKey, color);
+                    key2Node.put(existKey, node);
+                }
+                // сделать связь
+                Edge edge = new Edge(file.getName(), existKey);
+                edges.add(edge);
+            }
+        }
 
-		Map<String, Set<?>> name2Set = new HashMap<>();
-		for(Node node: key2Node.values()) {
-			log.info("node" +node.getLabel() + " Color " + node.getColor());
-		}
-		for(Edge edge: edges) {
-			log.info("edge" +edge.getFrom() +"->" +edge.getTo());
-		}
-		name2Set.put("nodes", new HashSet<>(key2Node.values()));
-		name2Set.put("edges", edges);
+        Map<String, Set<?>> name2Set = new HashMap<>();
+        for (Node node : key2Node.values()) {
+            log.info("node" + node.getLabel() + " Color " + node.getColor());
+        }
+        for (Edge edge : edges) {
+            log.info("edge" + edge.getFrom() + "->" + edge.getTo());
+        }
+        name2Set.put("nodes", new HashSet<>(key2Node.values()));
+        name2Set.put("edges", edges);
 
-		return name2Set;
-	}
+        return name2Set;
+    }
 
 }
