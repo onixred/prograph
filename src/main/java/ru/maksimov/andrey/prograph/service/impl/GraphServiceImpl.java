@@ -48,13 +48,6 @@ public class GraphServiceImpl implements GraphService {
         for (File file : files) {
             for (Property property : file.getGroupProperties()) {
                 String existKey = null;
-
-                // TODO check
-                /*
-                 * for(String key: key2Node.keySet()) {
-                 * if(property.getShortName().contains(key)) { existKey = key;
-                 * break; } }
-                 */
                 if (existKey == null) {
                     existKey = property.getShortName();
                 }

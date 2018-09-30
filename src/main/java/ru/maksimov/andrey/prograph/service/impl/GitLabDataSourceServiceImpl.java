@@ -52,55 +52,77 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
                 if (project.getDefaultBranch() == null) {
                     continue;
                 }
-
-                for (String filePath : graphConfig.getFile().getListPath()) {
-                    try {
-                        List<TreeItem> tree = repositoryApi.getTree(project.getId(), filePath + project.getName(),
-                                "master");
-                        try {
-                            Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
-                        } catch (InterruptedException e1) {
-                            log.error("Unable find file for project " + project.getName(), e1);
-                        }
-                        if (tree.isEmpty()) {
-                            continue;
-                        }
-                        for (TreeItem item : tree) {
-                            for (String prefixFilter : graphConfig.getFile().getListPrefixFilter()) {
-                                if (item.getName().contains(prefixFilter)) {
-                                    log.info(item.getName());
-                                    // загрузка файла
-                                    try {
-                                        InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(),
-                                                item.getId());
-                                        URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
-
-                                        File targetFile = new File(url.getPath() + item.getName());
-                                        java.nio.file.Files.copy(initialStream, targetFile.toPath(),
-                                                StandardCopyOption.REPLACE_EXISTING);
-                                        IOUtils.closeQuietly(initialStream);
-                                        try {
-                                            Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
-                                        } catch (InterruptedException e1) {
-                                            log.error("Unable find file for project " + project.getName(), e1);
-                                        }
-                                    } catch (IOException e) {
-                                        log.error("Unable save file " + item.getName() + " " + e.getMessage(), e);
-                                    } catch (GitLabApiException e) {
-                                        log.error("Unable load file " + item.getName() + " " + e.getMessage(), e);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (GitLabApiException e) {
-                        log.error("Unable get tree for projects " + project.getName() + " " + e.getMessage(), e);
-                    }
+                if (graphConfig.getFile().getListPath().isEmpty()) {
+                    findDfs(project, repositoryApi);
+                } else {
+                    findPath(project, repositoryApi);
                 }
+
             }
         } catch (GitLabApiException e) {
             log.error("Unable get git projects " + e.getMessage(), e);
         }
 
+    }
+
+    private void findPath(Project project, RepositoryApi repositoryApi) {
+        boolean isFind = false;
+        for (String filePath : graphConfig.getFile().getListPath()) {
+            try {
+                List<TreeItem> tree = repositoryApi.getTree(project.getId(), filePath + project.getName(), "master");
+                try {
+                    Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
+                } catch (InterruptedException e1) {
+                    log.error("Unable find file for project " + project.getName(), e1);
+                }
+                if (tree.isEmpty()) {
+                    continue;
+                }
+                for (TreeItem item : tree) {
+                    for (String prefixFilter : graphConfig.getFile().getListPrefixFilter()) {
+                        if (item.getName().contains(prefixFilter)) {
+                            log.info(item.getName());
+                            // если нашли хотя бы один файл то помечаем поиск
+                            // успехом
+                            isFind = true;
+                            // загрузка файла
+
+                            try {
+                                InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(),
+                                        item.getId());
+                                URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
+
+                                File targetFile = new File(url.getPath() + item.getName());
+                                java.nio.file.Files.copy(initialStream, targetFile.toPath(),
+                                        StandardCopyOption.REPLACE_EXISTING);
+                                IOUtils.closeQuietly(initialStream);
+                                try {
+                                    Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
+                                } catch (InterruptedException e1) {
+                                    log.error("Unable find file for project " + project.getName(), e1);
+                                }
+                            } catch (IOException e) {
+                                log.error("Unable save file " + item.getName() + " " + e.getMessage(), e);
+                            } catch (GitLabApiException e) {
+                                log.error("Unable load file " + item.getName() + " " + e.getMessage(), e);
+                            }
+                        }
+                    }
+                }
+            } catch (GitLabApiException e) {
+                log.error("Unable get tree for projects " + project.getName() + " " + e.getMessage(), e);
+            }
+        }
+        // если не нашли то запустить поиск DFS
+        if (!isFind) {
+            findDfs(project, repositoryApi);
+        }
+
+    }
+
+    private void findDfs(Project project, RepositoryApi repositoryApi) {
+        // Dfs (Поиск в глубину)
+        log.info("find dfs for " +  project.getName());
     }
 
     private GitLabApi getGitLabApi() {
