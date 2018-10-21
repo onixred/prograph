@@ -1,13 +1,12 @@
 package ru.maksimov.andrey.prograph.config;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import lombok.Data;
+import ru.maksimov.andrey.prograph.component.Utility;
 
 /**
  * Конфиг свойств gitlab
@@ -18,6 +17,7 @@ import lombok.Data;
 @Configuration
 @ConfigurationProperties(prefix = "gitlab")
 public class GitlabConfig {
+
     private Boolean load;
     private String hostUrl;
     private String privateToken;
@@ -33,12 +33,12 @@ public class GitlabConfig {
 
         public void setPaths(String paths) {
             this.paths = paths;
-            this.listPath = new HashSet<>(Arrays.asList(paths.split("\\s*,\\s*")));
+            this.listPath = Utility.string2SetString(paths);
         }
 
         public void setPrefixFilters(String prefixFilters) {
             this.prefixFilters = prefixFilters;
-            this.listPrefixFilter = new HashSet<>(Arrays.asList(prefixFilters.split("\\s*,\\s*")));
+            this.listPrefixFilter = Utility.string2SetString(prefixFilters);
         }
     }
 

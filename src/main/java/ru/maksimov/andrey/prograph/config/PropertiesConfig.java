@@ -1,9 +1,11 @@
 package ru.maksimov.andrey.prograph.config;
 
 import lombok.Data;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import ru.maksimov.andrey.prograph.component.PropertyType;
+import ru.maksimov.andrey.prograph.component.Utility;
 
 import java.util.*;
 
@@ -28,6 +30,6 @@ public class PropertiesConfig {
 
     public void setNtkServices(String ntkServices) {
         this.ntkServices = ntkServices;
-        this.whiteListNtkServices = new HashSet<>(Arrays.asList(ntkServices.split(", ")));
+        this.whiteListNtkServices = Utility.string2SetString(ntkServices);
     }
 }
