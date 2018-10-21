@@ -33,6 +33,9 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GitLabDataSourceServiceImpl implements DataSourceService {
     public static final long REPOSITORY_SLEEP_TIME_IN_MILLS = 300;
+
+    public static final String REF_NAME = "master";
+
     @NonNull
     private final GitlabConfig graphConfig;
     @NonNull
@@ -69,7 +72,7 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
         boolean isFind = false;
         for (String filePath : graphConfig.getFile().getListPath()) {
             try {
-                List<TreeItem> tree = repositoryApi.getTree(project.getId(), filePath + project.getName(), "master");
+                List<TreeItem> tree = repositoryApi.getTree(project.getId(), filePath + project.getName(), REF_NAME);
                 try {
                     Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
                 } catch (InterruptedException e1) {
@@ -86,26 +89,7 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
                             // успехом
                             isFind = true;
                             // загрузка файла
-
-                            try {
-                                InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(),
-                                        item.getId());
-                                URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
-
-                                File targetFile = new File(url.getPath() + item.getName());
-                                java.nio.file.Files.copy(initialStream, targetFile.toPath(),
-                                        StandardCopyOption.REPLACE_EXISTING);
-                                IOUtils.closeQuietly(initialStream);
-                                try {
-                                    Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
-                                } catch (InterruptedException e1) {
-                                    log.error("Unable find file for project " + project.getName(), e1);
-                                }
-                            } catch (IOException e) {
-                                log.error("Unable save file " + item.getName() + " " + e.getMessage(), e);
-                            } catch (GitLabApiException e) {
-                                log.error("Unable load file " + item.getName() + " " + e.getMessage(), e);
-                            }
+                            copeFile(repositoryApi, project, item.getId(), item.getName());
                         }
                     }
                 }
@@ -122,7 +106,57 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
 
     private void findDfs(Project project, RepositoryApi repositoryApi) {
         // Dfs (Поиск в глубину)
-        log.info("find dfs for " +  project.getName());
+        log.info("find dfs for " + project.getName());
+        searchFileByDeepness(repositoryApi, project, "");
+
+    }
+
+    private boolean searchFileByDeepness(RepositoryApi repositoryApi, Project project, String path) {
+        try {
+            List<TreeItem> tree = repositoryApi.getTree(project.getId(), path, REF_NAME);
+            if (tree.isEmpty()) {
+                return false;
+            }
+            for (TreeItem item : tree) {
+                if (item.getType().equals(TreeItem.Type.BLOB)) {
+                    if (item.getName().contains(propertiesConfig.getFilter())) {
+                        // нашли то что искали
+                        copeFile(repositoryApi, project, item.getId(),
+                                project.getName() + propertiesConfig.getFilter());
+                        return true;
+                    }
+                } else if (item.getType().equals(TreeItem.Type.TREE)) {
+                    boolean isSearchFile = searchFileByDeepness(repositoryApi, project, item.getPath());
+                    if (isSearchFile) {
+                        return isSearchFile;
+                    }
+                }
+            }
+        } catch (GitLabApiException e) {
+            log.error("Unable get tree for projects " + project.getName() + " " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    private void copeFile(RepositoryApi repositoryApi, Project project, String itemId, String name) {
+        // загрузка файла
+        try {
+            InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(), itemId);
+            URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
+
+            File targetFile = new File(url.getPath() + name);
+            java.nio.file.Files.copy(initialStream, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            IOUtils.closeQuietly(initialStream);
+            try {
+                Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
+            } catch (InterruptedException e1) {
+                log.error("Unable find file for project " + project.getName(), e1);
+            }
+        } catch (IOException e) {
+            log.error("Unable save file " + name + " " + e.getMessage(), e);
+        } catch (GitLabApiException e) {
+            log.error("Unable load file " + name + " " + e.getMessage(), e);
+        }
     }
 
     private GitLabApi getGitLabApi() {
