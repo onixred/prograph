@@ -23,4 +23,9 @@ public class GraphController {
 	public Map<String, Set<?>> moduleInfo() {
 		return graphService.fillNodeAndEdges();
 	}
+
+	@GetMapping("/dependencies")
+	public Map<String, Set<?>> dependencies() {
+		return graphService.findDependencies();
+	}
 }
