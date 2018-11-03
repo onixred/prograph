@@ -12,16 +12,21 @@ import org.gitlab4j.api.models.TreeItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ru.maksimov.andrey.prograph.component.PropertyType;
+import ru.maksimov.andrey.prograph.component.Utility;
 import ru.maksimov.andrey.prograph.config.GitlabConfig;
 import ru.maksimov.andrey.prograph.config.PropertiesConfig;
 import ru.maksimov.andrey.prograph.service.DataSourceService;
+import ru.maksimov.andrey.prograph.service.PropertieService;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.StandardCopyOption;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Реализация сервиса по работе с git-хранилищем
@@ -40,35 +45,44 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
     private final GitlabConfig graphConfig;
     @NonNull
     private final PropertiesConfig propertiesConfig;
+    @NonNull
+    private PropertieService propertieService;
     private GitLabApi gitLabApi;
 
     @Override
-    public void loadFile() {
+    public Set<ru.maksimov.andrey.prograph.model.File> loadFile() {
         if (!graphConfig.getLoad()) {
-            return;
+            return Collections.emptySet();
         }
         try {
+            Set<ru.maksimov.andrey.prograph.model.File> files = new HashSet<>();
             List<Project> projects = getGitLabApi().getProjectApi().getProjects();
-            RepositoryApi repositoryApi = gitLabApi.getRepositoryApi();
+            RepositoryApi repositoryApi = getGitLabApi().getRepositoryApi();
             for (Project project : projects) {
                 log.info(project.getName());
                 if (project.getDefaultBranch() == null) {
                     continue;
                 }
+                ru.maksimov.andrey.prograph.model.File file = new ru.maksimov.andrey.prograph.model.File(
+                        Utility.getFileName(project.getName()), PropertyType.NTK_SERVICE);
                 if (graphConfig.getFile().getListPath().isEmpty()) {
-                    findDfs(project, repositoryApi);
+                    findDfs(file, project, repositoryApi);
                 } else {
-                    findPath(project, repositoryApi);
+                    findPath(file, project, repositoryApi);
                 }
-
+                if (!file.getGroupProperties().isEmpty()) {
+                    files.add(file);
+                }
             }
+            return files;
         } catch (GitLabApiException e) {
             log.error("Unable get git projects " + e.getMessage(), e);
         }
+        return Collections.emptySet();
 
     }
 
-    private void findPath(Project project, RepositoryApi repositoryApi) {
+    private void findPath(ru.maksimov.andrey.prograph.model.File file, Project project, RepositoryApi repositoryApi) {
         boolean isFind = false;
         for (String filePath : graphConfig.getFile().getListPath()) {
             try {
@@ -89,7 +103,12 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
                             // успехом
                             isFind = true;
                             // загрузка файла
-                            copeFile(repositoryApi, project, item.getId(), item.getName());
+                            // copeFile(repositoryApi, project, item.getId(),
+                            // item.getName());
+                            File tmpFile = loadFile(repositoryApi, project, item.getId(), item.getName());
+                            if (tmpFile != null) {
+                                recognizeFile(file, tmpFile);
+                            }
                         }
                     }
                 }
@@ -99,19 +118,19 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
         }
         // если не нашли то запустить поиск DFS
         if (!isFind) {
-            findDfs(project, repositoryApi);
+            findDfs(file, project, repositoryApi);
         }
 
     }
 
-    private void findDfs(Project project, RepositoryApi repositoryApi) {
+    private void findDfs(ru.maksimov.andrey.prograph.model.File file, Project project, RepositoryApi repositoryApi) {
         // Dfs (Поиск в глубину)
-        log.info("find dfs for " + project.getName());
-        searchFileByDeepness(repositoryApi, project, "");
-
+        log.debug("find dfs for " + project.getName());
+        searchFileByDeepness(file, repositoryApi, project, "");
     }
 
-    private boolean searchFileByDeepness(RepositoryApi repositoryApi, Project project, String path) {
+    private boolean searchFileByDeepness(ru.maksimov.andrey.prograph.model.File file, RepositoryApi repositoryApi,
+            Project project, String path) {
         try {
             List<TreeItem> tree = repositoryApi.getTree(project.getId(), path, REF_NAME);
             if (tree.isEmpty()) {
@@ -121,15 +140,15 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
                 if (item.getType().equals(TreeItem.Type.BLOB)) {
                     if (item.getName().contains(propertiesConfig.getFilter())) {
                         // нашли то что искали
-                        copeFile(repositoryApi, project, item.getId(),
+                        log.debug(item.getName());
+                        File tmpFile = loadFile(repositoryApi, project, item.getId(),
                                 project.getName() + propertiesConfig.getFilter());
-                        return true;
+                        if (tmpFile != null) {
+                            recognizeFile(file, tmpFile);
+                        }
                     }
                 } else if (item.getType().equals(TreeItem.Type.TREE)) {
-                    boolean isSearchFile = searchFileByDeepness(repositoryApi, project, item.getPath());
-                    if (isSearchFile) {
-                        return isSearchFile;
-                    }
+                    searchFileByDeepness(file, repositoryApi, project, item.getPath());
                 }
             }
         } catch (GitLabApiException e) {
@@ -138,25 +157,29 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
         return false;
     }
 
-    private void copeFile(RepositoryApi repositoryApi, Project project, String itemId, String name) {
+    private void recognizeFile(ru.maksimov.andrey.prograph.model.File file, File tmpFile) {
+        if (tmpFile.getName().contains(propertiesConfig.getFilter())) {
+            propertieService.merge(file, tmpFile);
+        } else {
+            log.warn("Skip load file " + tmpFile.getName() + " no implementation of the bootloader.");
+        }
+    }
+
+    private File loadFile(RepositoryApi repositoryApi, Project project, String itemId, String name) {
         // загрузка файла
         try {
             InputStream initialStream = repositoryApi.getRawBlobContent(project.getId(), itemId);
-            URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
-
-            File targetFile = new File(url.getPath() + name);
-            java.nio.file.Files.copy(initialStream, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            IOUtils.closeQuietly(initialStream);
-            try {
-                Thread.sleep(REPOSITORY_SLEEP_TIME_IN_MILLS);
-            } catch (InterruptedException e1) {
-                log.error("Unable find file for project " + project.getName(), e1);
-            }
+            File tempFile = File.createTempFile(name, null);
+            tempFile.deleteOnExit();
+            FileOutputStream out = new FileOutputStream(tempFile);
+            IOUtils.copy(initialStream, out);
+            return tempFile;
         } catch (IOException e) {
             log.error("Unable save file " + name + " " + e.getMessage(), e);
         } catch (GitLabApiException e) {
             log.error("Unable load file " + name + " " + e.getMessage(), e);
         }
+        return null;
     }
 
     private GitLabApi getGitLabApi() {

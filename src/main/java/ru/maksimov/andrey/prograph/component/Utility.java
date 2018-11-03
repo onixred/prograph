@@ -113,6 +113,15 @@ public class Utility {
             return Collections.emptySet();
         }
         return new HashSet<String>(Arrays.asList(str.split(REGE_SPLIT)));
+    }
 
+    /**
+     * Получить имя в через точку а не тире
+     * 
+     * @return имя файла
+     */
+    public static String getFileName(String fileName) {
+        String name = Utility.tailCut(fileName);
+        return name.replace('-', '.');
     }
 }

@@ -1,5 +1,7 @@
 package ru.maksimov.andrey.prograph.service;
 
+import java.util.Set;
+
 /**
  * Сервис по работе с хранилищем
  * 
@@ -7,6 +9,6 @@ package ru.maksimov.andrey.prograph.service;
  */
 public interface DataSourceService {
 
-	void loadFile();
+    Set<ru.maksimov.andrey.prograph.model.File> loadFile();
 
 }

@@ -43,7 +43,7 @@ public class PropertyServiceImpl implements PropertieService {
 
             if (files != null) {
                 for (java.io.File propertyFile : files) {
-                    propertyFiles.add(loadConfig(propertyFile));
+                    propertyFiles.add(loadConfig(null, propertyFile));
                 }
             } else {
                 log.warn("FATAL: files not found {} ", propertiesConfig.getPath());
@@ -58,14 +58,14 @@ public class PropertyServiceImpl implements PropertieService {
     /**
      * Загрузка конфига
      */
-    private File loadConfig(java.io.File propertyFile) {
+    private File loadConfig(File file, java.io.File propertyFile) {
         try {
             Properties properties = new Properties();
             properties.load(new FileReader(propertyFile));
-
-            File file = new File(getFileName(propertyFile.getName()), PropertyType.NTK_SERVICE);
+            if (file == null) {
+                file = new File(Utility.getFileName(propertyFile.getName()), PropertyType.NTK_SERVICE);
+            }
             initFile(properties, file);
-
             return file;
         } catch (Exception e) {
             throw new RuntimeException("FATAL: can't load config from: " + propertyFile.getPath(), e);
@@ -86,11 +86,10 @@ public class PropertyServiceImpl implements PropertieService {
     private String preProcessProperty(String propertyName, String propertyValue) {
         // TODO уйти от частных случаев
         /*
-         * 1) все БД делать с префиксом db- 
-         * 2) все службы и другие серваисы не должыв содержать знавк '-' 
-         * 3) использовать префикс для определения наших служб 
-         * 4) Ипословать постфикс для фильтрации ключей 
-         * 5) Исползтвать список наших служб (не рекомендуеться это временное
+         * 1) все БД делать с префиксом db- 2) все службы и другие серваисы не
+         * должыв содержать знавк '-' 3) использовать префикс для определения
+         * наших служб 4) Ипословать постфикс для фильтрации ключей 5)
+         * Исползтвать список наших служб (не рекомендуеться это временное
          * решение)
          */
         if ("db.url".equals(propertyName) || "db.host".equals(propertyName)) {
@@ -120,12 +119,6 @@ public class PropertyServiceImpl implements PropertieService {
         return propertyName;
     }
 
-    private String getFileName(String fileName) {
-        String name = Utility.tailCut(fileName);
-
-        return name.replace('-', '.');
-    }
-
     private void initFile(Properties properties, File file) {
         // Поиск ключей которые удовлетворяют regexp-ам
         Map<String, Property> key2Property = new HashMap<>();
@@ -141,7 +134,12 @@ public class PropertyServiceImpl implements PropertieService {
         // обработка файла находим минимальный ключ и объединяем
         ArrayList<String> listKey = new ArrayList<>(key2Property.keySet());
         Collections.sort(listKey);
+
+        // если есть GroupProperties то учесть их.
         Map<String, GroupProperty> key2GroupProperty = new HashMap<>();
+        for (GroupProperty groupProperty : file.getGroupProperties()) {
+            key2GroupProperty.put(groupProperty.getShortName(), groupProperty);
+        }
 
         for (String key : listKey) {
             boolean isAdd = false;
@@ -170,6 +168,18 @@ public class PropertyServiceImpl implements PropertieService {
                 key2GroupProperty.put(key, new GroupProperty(key2Property.get(key)));
             }
         }
+        // удальить все что было
+        file.getGroupProperties().clear();
+        // добавить новую группировку
         file.getGroupProperties().addAll(key2GroupProperty.values());
+    }
+
+    @Override
+    public void merge(File file1, java.io.File file2) {
+        loadConfig(file1, file2);
+    }
+
+    @Override
+    public void merge(File file1, File file2) {
     }
 }

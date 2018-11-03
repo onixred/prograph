@@ -18,7 +18,6 @@ import ru.maksimov.andrey.prograph.model.Node;
 import ru.maksimov.andrey.prograph.model.Property;
 import ru.maksimov.andrey.prograph.service.DataSourceService;
 import ru.maksimov.andrey.prograph.service.GraphService;
-import ru.maksimov.andrey.prograph.service.PropertieService;
 
 /**
  * Реализация сервиса по работе с графом
@@ -29,16 +28,13 @@ import ru.maksimov.andrey.prograph.service.PropertieService;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GraphServiceImpl implements GraphService {
-    private final PropertieService propertieService;
     private final DataSourceService dataSourceService;
 
     @Override
     public Map<String, Set<?>> fillNodeAndEdges() {
-       
-        dataSourceService.loadFile();
+        Set<File> files = dataSourceService.loadFile();
         Set<Edge> edges = new HashSet<>();
         Map<String, Node> key2Node = new HashMap<>();
-        Set<File> files = propertieService.loadFiles();
         for (File file : files) {
             Color color = Utility.getColor(file.getType());
             Node node = new Node(file.getName(), color);
