@@ -25,7 +25,7 @@ public class GraphController {
 	}
 
 	@GetMapping("/dependencies")
-	public Map<String, Set<?>> dependencies() {
+	public Map<String, Set<String>> dependencies() {
 		return graphService.findDependencies();
 	}
 }
