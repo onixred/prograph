@@ -16,4 +16,6 @@ public interface GraphService {
 	 * @return карта где ключ - название, а значение это набор из вершин или ребер
 	 */
 	Map<String, Set<?>> fillNodeAndEdges();
+
+	Map<String, Set<?>> findDependencies();
 }

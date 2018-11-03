@@ -8,13 +8,15 @@ import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Модель данных группа свойств
  * 
  * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
  */
-@Data
+@Getter
+@Setter
 @EqualsAndHashCode(callSuper = true)
 public class GroupProperty extends Property {
 

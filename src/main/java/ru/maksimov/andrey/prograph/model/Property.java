@@ -18,6 +18,7 @@ public class Property {
     private String name;
     @Setter(lombok.AccessLevel.PROTECTED)
     private String shortName;
+
     private final PropertyType type;
 
     public Property(String name, PropertyType type) {
