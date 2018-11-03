@@ -75,11 +75,11 @@ public class GraphServiceImpl implements GraphService {
 
 
     @Override
-    public Map<String, Set<?>> findDependencies() {
-        dataSourceService.loadFile();
+    public Map<String, Set<String>> findDependencies() {
+
         Set<Edge> edges = new HashSet<>();
         Map<String, Node> key2Node = new HashMap<>();
-        Set<File> files = propertieService.loadFiles();
+        Set<File> files = dataSourceService.loadFile();
         for (File file : files) {
             Color color = Utility.getColor(file.getType());
             Node node = new Node(file.getName(), color);
@@ -104,20 +104,11 @@ public class GraphServiceImpl implements GraphService {
             }
         }
 
-        Map<String, Set<?>> name2Set = new HashMap<>();
-        for (Node node : key2Node.values()) {
-            log.info("node" + node.getLabel() + " Color " + node.getColor());
-        }
         Map<String, Set<String>> result = new HashMap<>();
         for (Edge edge : edges) {
             Set<String> strings = result.computeIfAbsent(edge.getFrom(), k -> new HashSet<>());
             strings.add(edge.getTo());
         }
-
-        for (Map.Entry<String, Set<String>> entry : result.entrySet()) {
-            log.info(entry.getKey() + ": " + entry.getValue());
-        }
-
-        return name2Set;
+        return result;
     }
 }
