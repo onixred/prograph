@@ -160,6 +160,7 @@ public class GitLabDataSourceServiceImpl implements DataSourceService {
     private void recognizeFile(ru.maksimov.andrey.prograph.model.File file, File tmpFile) {
         if (tmpFile.getName().contains(propertiesConfig.getFilter())) {
             propertieService.merge(file, tmpFile);
+            tmpFile.delete();
         } else {
             log.warn("Skip load file " + tmpFile.getName() + " no implementation of the bootloader.");
         }

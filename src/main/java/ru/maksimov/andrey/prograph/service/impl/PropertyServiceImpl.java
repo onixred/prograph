@@ -1,5 +1,6 @@
 package ru.maksimov.andrey.prograph.service.impl;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PropertyServiceImpl implements PropertieService {
+
+    @NonNull
     private final PropertiesConfig propertiesConfig;
 
     @Override
