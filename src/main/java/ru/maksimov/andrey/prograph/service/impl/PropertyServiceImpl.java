@@ -2,7 +2,8 @@ package ru.maksimov.andrey.prograph.service.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.maksimov.andrey.prograph.component.PropertyType;
@@ -14,21 +15,17 @@ import ru.maksimov.andrey.prograph.model.Property;
 import ru.maksimov.andrey.prograph.service.PropertieService;
 
 import java.io.FileReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Реализация сервиса по работе со свойствами
  * 
  * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PropertyServiceImpl implements PropertieService {
@@ -37,25 +34,13 @@ public class PropertyServiceImpl implements PropertieService {
     private final PropertiesConfig propertiesConfig;
 
     @Override
-    public Set<File> loadFiles() {
-        Set<File> propertyFiles = new HashSet<>();
-        try {
-            URL url = PropertyServiceImpl.class.getResource(propertiesConfig.getPath());
-            java.io.File file = new java.io.File(url.toURI());
-            java.io.File[] files = file.listFiles((dir, filename) -> filename.endsWith(propertiesConfig.getFilter()));
+    public void merge(File file1, java.io.File file2) {
+        loadConfig(file1, file2);
+    }
 
-            if (files != null) {
-                for (java.io.File propertyFile : files) {
-                    propertyFiles.add(loadConfig(null, propertyFile));
-                }
-            } else {
-                log.warn("FATAL: files not found {} ", propertiesConfig.getPath());
-            }
-        } catch (Exception e) {
-            log.warn("FATAL: can't scan properties path: " + propertiesConfig.getPath());
-        }
-
-        return propertyFiles;
+    @Override
+    public void merge(File file1, File file2) {
+        throw new NotImplementedException("merge for arg file1, file2  not implemented.");
     }
 
     /**
@@ -82,7 +67,6 @@ public class PropertyServiceImpl implements PropertieService {
                 return entry.getKey();
             }
         }
-
         return PropertyType.UNDEFINED;
     }
 
@@ -196,14 +180,5 @@ public class PropertyServiceImpl implements PropertieService {
         file.getGroupProperties().clear();
         // добавить новую группировку
         file.getGroupProperties().addAll(key2GroupProperty.values());
-    }
-
-    @Override
-    public void merge(File file1, java.io.File file2) {
-        loadConfig(file1, file2);
-    }
-
-    @Override
-    public void merge(File file1, File file2) {
     }
 }
