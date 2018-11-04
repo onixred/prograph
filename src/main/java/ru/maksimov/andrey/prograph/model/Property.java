@@ -1,29 +1,28 @@
 package ru.maksimov.andrey.prograph.model;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.maksimov.andrey.prograph.component.PropertyType;
-import ru.maksimov.andrey.prograph.component.Utility;
 
 /**
- * Модель данных свойство
+ * Модель данных свойсто
  * 
  * @author <a href="mailto:onixbed@gmail.com">amaksimov</a>
  */
-@Data
-@EqualsAndHashCode(callSuper = false)
-public class Property {
-    @Setter(lombok.AccessLevel.PROTECTED)
-    private String name;
-    @Setter(lombok.AccessLevel.PROTECTED)
-    private String shortName;
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(callSuper = true)
+public class Property extends BaseProperty {
 
-    private final PropertyType type;
+    @Setter(lombok.AccessLevel.PROTECTED)
+    private String value;
 
-    public Property(String name, PropertyType type) {
-        this.name = name;
-        this.type = type;
-        shortName = Utility.tailCut(name);
+    public Property(String name, PropertyType type, String value) {
+        super(name, type);
+        this.value = value;
     }
+
 }

@@ -8,6 +8,7 @@ import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Модель данных группа свойств
@@ -16,8 +17,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 @EqualsAndHashCode(callSuper = true)
-public class GroupProperty extends Property {
+public class GroupProperty extends BaseProperty {
 
     @Getter(lombok.AccessLevel.NONE)
     private final Map<String, Property> likeShortName2Property = new HashMap<>();

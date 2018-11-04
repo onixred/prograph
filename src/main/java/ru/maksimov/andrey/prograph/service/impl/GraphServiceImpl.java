@@ -17,7 +17,7 @@ import ru.maksimov.andrey.prograph.model.Edge;
 import ru.maksimov.andrey.prograph.model.File;
 import ru.maksimov.andrey.prograph.model.Graph;
 import ru.maksimov.andrey.prograph.model.Node;
-import ru.maksimov.andrey.prograph.model.Property;
+import ru.maksimov.andrey.prograph.model.BaseProperty;
 import ru.maksimov.andrey.prograph.service.DataSourceService;
 import ru.maksimov.andrey.prograph.service.GraphService;
 
@@ -78,7 +78,7 @@ public class GraphServiceImpl implements GraphService {
         }
 
         for (File file : files) {
-            for (Property property : file.getGroupProperties()) {
+            for (BaseProperty property : file.getGroupProperties()) {
                 String existKey = property.getShortName();
                 if(!isNotFillNodes) {
                     Node node = key2Node.get(existKey);

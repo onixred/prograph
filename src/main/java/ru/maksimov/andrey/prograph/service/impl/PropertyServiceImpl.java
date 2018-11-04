@@ -89,10 +89,10 @@ public class PropertyServiceImpl implements PropertieService {
     private String preProcessProperty(String propertyName, String propertyValue) {
         // TODO уйти от частных случаев
         /*
-         * 1) все БД делать с префиксом db- 2) все службы и другие серваисы не
-         * должыв содержать знавк '-' 3) использовать префикс для определения
-         * наших служб 4) Ипословать постфикс для фильтрации ключей 5)
-         * Исползтвать список наших служб (не рекомендуеться это временное
+         * 1) все БД делать с префиксом db- 2) все службы и другие сервисы не
+         * должны содержать знаков '-' 3) использовать префикс для определения
+         * наших служб 4) Использовать постфикс для фильтрации ключей 5)
+         * Использовать список наших служб (не рекомендуется это временное
          * решение)
          */
         if ("db.url".equals(propertyName) || "db.host".equals(propertyName)) {
@@ -126,10 +126,11 @@ public class PropertyServiceImpl implements PropertieService {
         // Поиск ключей которые удовлетворяют regexp-ам
         Map<String, Property> key2Property = new HashMap<>();
         for (String propertyName : properties.stringPropertyNames()) {
-            String propertyNamePreProcess = preProcessProperty(propertyName, properties.getProperty(propertyName));
+            String propertyValue = properties.getProperty(propertyName);
+            String propertyNamePreProcess = preProcessProperty(propertyName, propertyValue);
             PropertyType propertyType = getPropertyType(propertyNamePreProcess);
             if (propertyType != PropertyType.UNDEFINED) {
-                Property property = new Property(propertyNamePreProcess, propertyType);
+                Property property = new Property(propertyNamePreProcess, propertyType, propertyValue);
                 key2Property.put(property.getShortName(), property);
             }
         }
@@ -147,6 +148,7 @@ public class PropertyServiceImpl implements PropertieService {
         for (String key : listKey) {
             boolean isAdd = false;
             for (String key2 : key2GroupProperty.keySet()) {
+               //Делаем сравнение по ключам (вхождение ключей)
                 if (key.length() > key2.length()) {
                     if (key.contains(key2)) {
                         isAdd = true;
@@ -163,6 +165,25 @@ public class PropertyServiceImpl implements PropertieService {
                         groupProperty.addLikeProperty(key2Property.get(key));
                         key2GroupProperty.put(key, groupProperty);
                         break;
+                    }
+                }
+                //Делаем сравнение по значениям
+                if (propertiesConfig.isCompareValue()) {
+                    Property property = key2Property.get(key);
+                    if (property.getType() != PropertyType.DB
+                            && propertiesConfig.getMinSizeCorrectValue() <= property.getValue().length()) {
+                        boolean isEqualsValue = false;
+                        GroupProperty groupProperty = key2GroupProperty.get(key2);
+                        for (Property property2 : groupProperty.getLikeProperties()) {
+                            if (property2.getValue().equalsIgnoreCase(property.getValue())) {
+                                isEqualsValue = true;
+                                break;
+                            }
+                        }
+                        if (isEqualsValue) {
+                            isAdd = true;
+                            groupProperty.addLikeProperty(property);
+                        }
                     }
                 }
             }

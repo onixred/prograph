@@ -24,6 +24,10 @@ public class PropertiesConfig {
 
     private String ntkServices;
 
+    private boolean compareValue; 
+
+    private int minSizeCorrectValue; 
+
     private Set<String> whiteListNtkServices = new HashSet<>();
 
     private Map<PropertyType, String> types = new LinkedHashMap<>();
